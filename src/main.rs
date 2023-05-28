@@ -1,4 +1,5 @@
 use image::{ImageBuffer, Rgb};
+const MAX_12_BIT_VALUE: f32 = 4095f32;
 
 fn main() {
     println!("Iniciando leitura de arquivos");
@@ -11,19 +12,20 @@ fn main() {
         "{} {} {} {}",
         image.width, image.height, image.cpp, image.model
     );
-    println!(
-        "Color at 0,0 {} 0,1 {}  1,0 {} 1,1 {}",
-        cfa.color_at(0, 0),
-        cfa.color_at(0, 1),
-        cfa.color_at(1, 0),
-        cfa.color_at(1, 1)
-    );
+
+    // A imagem RAW aqui usa valores 12-bit unassigned.
+    // Segue a seguinte ordem:
+    // [R G
+    //  G B]
 
     if let rawloader::RawImageData::Integer(data) = image.data {
         for x in 0..image.width as u32 {
             for y in 0..image.height as u32 {
                 let pixel = get_pixel_value(&data, x, y);
-                // println!("At {}, Pixel Value: {}", x + 1 * y, pixel);
+                //Para cada pixel verificar se é r g ou b
+                // Se for R interpolar verde e azul
+                // Se for G interpolar vermelho e azul
+                // Se for azul interpolar vermelho e verde
                 let demosaic_pixel = Rgb([pixel, pixel, pixel]);
                 demosaic.put_pixel(x, y, demosaic_pixel);
             }
@@ -34,8 +36,8 @@ fn main() {
 }
 
 fn get_pixel_value(data: &Vec<u16>, x: u32, y: u32) -> u8 {
-    let pixel = *data[(x + 1 * y) as usize];
-    let pixel = (pixel as f32 / 4095f32 * u8::MAX as f32) as u8;
+    let pixel = data[(x + 1 * y) as usize];
+    let pixel = (pixel as f32 / MAX_12_BIT_VALUE * u8::MAX as f32) as u8;
     pixel
 }
 
