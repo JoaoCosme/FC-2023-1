@@ -70,7 +70,7 @@ fn main() {
 }
 
 fn get_pixel_value(data: &Vec<u16>, x: u32, y: u32, width: u32, height: u32) -> u8 {
-    let index = x * width + y;
+    let index = x + y * width;
     if index >= width * height {
         return 0;
     }
