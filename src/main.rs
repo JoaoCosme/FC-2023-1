@@ -4,6 +4,37 @@ const MAX_12_BIT_VALUE: f32 = 4095f32;
 fn main() {
     println!("Iniciando leitura de arquivos.");
     let image = read_image();
+    let demosaic = demosaick_image(image);
+    let white_balance = white_balance(&demosaic);
+    println!("Processamento completo! Iniciando salvamento...");
+    demosaic.save("image.png").expect("Failed to save image");
+    println!("Salvamento completo com sucesso!");
+}
+
+fn white_balance(image: &ImageBuffer<Rgb<u8>, Vec<u8>>) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
+    // Computar a media de R G e B ao longo da imagem
+    let mut red_avg: i32 = 0;
+    let mut green_avg: i32 = 0;
+    let mut blue_avg: i32 = 0;
+    for x in 0..image.width() {
+        for y in 0..image.height() {
+            red_avg += image.get_pixel(x, y).0[0] as i32;
+            green_avg += image.get_pixel(x, y).0[1] as i32;
+            blue_avg += image.get_pixel(x, y).0[2] as i32;
+        }
+    }
+    red_avg = red_avg / (image.width() * image.height()) as i32;
+    green_avg = green_avg / (image.width() * image.height()) as i32;
+    blue_avg = blue_avg / (image.width() * image.height()) as i32;
+
+    // Computar os ganhos alfa e beta a partir disso
+    // Multiplicar R pelo ganho alfa
+    // Multiplicar B pelo ganho beta
+    let white_balanced_image = ImageBuffer::new(image.width(), image.height());
+    white_balanced_image
+}
+
+fn demosaick_image(image: rawloader::RawImage) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
     let mut demosaic = ImageBuffer::new(image.width as u32, image.height as u32);
 
     println!(
@@ -65,9 +96,7 @@ fn main() {
             }
         }
     }
-    println!("Processamento completo! Iniciando salvamento...");
-    demosaic.save("image.png").expect("Failed to save image");
-    println!("Salvamento completo com sucesso!");
+    demosaic
 }
 
 fn make_get_pixel(data: &Vec<u16>, width: u32, height: u32) -> impl Fn(u32, u32) -> u8 + '_ {
