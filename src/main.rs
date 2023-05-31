@@ -74,38 +74,40 @@ fn demosaick_image(image: rawloader::RawImage) -> ImageBuffer<Rgb<u8>, Vec<u8>> 
                 let get_pixel_value = make_get_pixel(&data, width, height);
                 let pixel = get_pixel_value(x, y);
 
-                let mut demosaic_pixel: Rgb<u8> = Rgb([255, 255, 255]);
+                let demosaic_pixel;
+                let red;
+                let green;
+                let blue;
                 if x % 2 == 0 || x == 0 {
                     if y % 2 == 0 || y == 0 {
                         //Caso vermelho
-                        let green = get_pixel_value(x + 1, y);
-                        let blue = get_pixel_value(x + 1, y + 1);
-                        let red = pixel;
-                        demosaic_pixel = Rgb([red, green, blue]);
+                        green = get_pixel_value(x + 1, y);
+                        blue = get_pixel_value(x + 1, y + 1);
+                        red = pixel;
                     } else {
                         //Caso verde
-                        let red = get_pixel_value(x + 1, y);
-                        let blue = get_pixel_value(x + 1, y + 1);
-                        let green = pixel;
-                        let demosaic_pixel = Rgb([red, green, blue]);
-                        demosaic.put_pixel(x, y, demosaic_pixel);
+                        red = get_pixel_value(x + 1, y);
+                        blue = get_pixel_value(x + 1, y + 1);
+                        green = pixel;
                     }
                 } else {
                     if y % 2 == 0 || y == 0 {
                         //Caso azul
-                        let green = get_pixel_value(x + 1, y);
-                        let red = get_pixel_value(x + 1, y + 1);
-                        let blue = pixel;
-                        let demosaic_pixel = Rgb([red, green, blue]);
-                        demosaic.put_pixel(x, y, demosaic_pixel);
+                        green = get_pixel_value(x + 1, y);
+                        red = get_pixel_value(x + 1, y + 1);
+                        blue = pixel;
                     } else {
                         //Caso verde
-                        let blue: u8 = get_pixel_value(x + 1, y);
-                        let red = get_pixel_value(x + 1, y + 1);
-                        let green = pixel;
-                        demosaic_pixel = Rgb([red, green, blue]);
+                        blue = get_pixel_value(x + 1, y);
+                        red = get_pixel_value(x + 1, y + 1);
+                        green = pixel;
                     }
                 }
+                demosaic_pixel = Rgb([
+                    normalize_pixel_val(red),
+                    normalize_pixel_val(green),
+                    normalize_pixel_val(blue),
+                ]);
                 demosaic.put_pixel(x, y, demosaic_pixel);
             }
         }
@@ -113,16 +115,18 @@ fn demosaick_image(image: rawloader::RawImage) -> ImageBuffer<Rgb<u8>, Vec<u8>> 
     demosaic
 }
 
-fn make_get_pixel(data: &Vec<u16>, width: u32, height: u32) -> impl Fn(u32, u32) -> u8 + '_ {
-    move |x: u32, y: u32| -> u8 {
+fn make_get_pixel(data: &Vec<u16>, width: u32, height: u32) -> impl Fn(u32, u32) -> u16 + '_ {
+    move |x: u32, y: u32| -> u16 {
         let index = x + y * width;
         if index >= width * height || index <= 0 {
             return 255;
         }
-        let pixel = data[index as usize];
-        let pixel = (pixel as f32 / MAX_12_BIT_VALUE * u8::MAX as f32) as u8;
-        return pixel;
+        data[index as usize]
     }
+}
+
+fn normalize_pixel_val(pixel: u16) -> u8 {
+    (pixel as f32 / MAX_12_BIT_VALUE * u8::MAX as f32) as u8
 }
 fn read_image() -> rawloader::RawImage {
     let file = "./src/images/scene-raw.dng";
