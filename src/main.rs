@@ -27,10 +27,24 @@ fn white_balance(image: &ImageBuffer<Rgb<u8>, Vec<u8>>) -> ImageBuffer<Rgb<u8>, 
     green_avg = green_avg / (image.width() * image.height()) as i32;
     blue_avg = blue_avg / (image.width() * image.height()) as i32;
 
+    let alfa = green_avg / red_avg;
+    let beta = green_avg / blue_avg;
+
+    let mut white_balanced_image = ImageBuffer::new(image.width(), image.height());
+
+    for x in 0..image.width() {
+        for y in 0..image.height() {
+            let red = image.get_pixel(x, y).0[0] as i32 * alfa;
+            let green = image.get_pixel(x, y).0[1];
+            let blue = image.get_pixel(x, y).0[2] as i32 * beta;
+
+            white_balanced_image.put_pixel(x, y, Rgb([red as u8, green, blue as u8]));
+        }
+    }
+
     // Computar os ganhos alfa e beta a partir disso
     // Multiplicar R pelo ganho alfa
     // Multiplicar B pelo ganho beta
-    let white_balanced_image = ImageBuffer::new(image.width(), image.height());
     white_balanced_image
 }
 
