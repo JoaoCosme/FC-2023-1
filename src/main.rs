@@ -101,16 +101,23 @@ fn demosaick_image(image: rawloader::RawImage) -> ImageBuffer<Rgb<u8>, Vec<u8>> 
     // Um que faça somente na vertical
 
     println!("Iniciando Demosaicking.");
+
     if let rawloader::RawImageData::Integer(data) = image.data {
+        let get_pixel_value = make_get_pixel(&data, image.width as u32, image.height as u32);
+        let get_avg_horizontal_and_vertical = |x: u32, y: u32| -> u16 {
+            (get_pixel_value(x + 1, y)
+                + get_pixel_value(x.saturating_sub(1), y)
+                + get_pixel_value(x, y + 1)
+                + get_pixel_value(x, y.saturating_sub(1)))
+                / 4
+        };
         for x in 0..image.width as u32 {
             for y in 0..image.height as u32 {
-                let width = image.width as u32;
-                let height = image.height as u32;
                 //Para cada pixel verificar se é r g ou b
                 // Se for R interpolar verde e azul
                 // Se for G interpolar vermelho e azul
                 // Se for azul interpolar vermelho e verde
-                let get_pixel_value = make_get_pixel(&data, width, height);
+
                 let pixel = get_pixel_value(x, y);
 
                 let demosaic_pixel;
@@ -120,24 +127,24 @@ fn demosaick_image(image: rawloader::RawImage) -> ImageBuffer<Rgb<u8>, Vec<u8>> 
                 if x % 2 == 0 || x == 0 {
                     if y % 2 == 0 || y == 0 {
                         //Caso vermelho
-                        green = get_pixel_value(x + 1, y);
+                        green = get_avg_horizontal_and_vertical(x, y);
                         blue = get_pixel_value(x + 1, y + 1);
                         red = pixel;
                     } else {
                         //Caso verde
-                        red = get_pixel_value(x + 1, y);
+                        red = get_avg_horizontal_and_vertical(x, y);
                         blue = get_pixel_value(x + 1, y + 1);
                         green = pixel;
                     }
                 } else {
                     if y % 2 == 0 || y == 0 {
                         //Caso azul
-                        green = get_pixel_value(x + 1, y);
+                        green = get_avg_horizontal_and_vertical(x, y);
                         red = get_pixel_value(x + 1, y + 1);
                         blue = pixel;
                     } else {
                         //Caso verde
-                        blue = get_pixel_value(x + 1, y);
+                        blue = get_avg_horizontal_and_vertical(x, y);
                         red = get_pixel_value(x + 1, y + 1);
                         green = pixel;
                     }
