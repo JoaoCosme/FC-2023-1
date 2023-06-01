@@ -6,6 +6,7 @@ fn main() {
     let image = read_image();
     let demosaic = demosaick_image(image);
     let white_balance = white_balance(&demosaic);
+    let gamma_encoded = gamma_correct_image(&white_balance);
     println!("Processamento completo! Iniciando salvamento...");
     demosaic
         .save("demosaick.png")
@@ -13,7 +14,25 @@ fn main() {
     white_balance
         .save("white_balance.png")
         .expect("Failed to save image");
+    gamma_encoded
+        .save("gamma_encoded.png")
+        .expect("Failed to save image");
     println!("Salvamento completo com sucesso!");
+}
+
+fn gamma_correct_image(image: &ImageBuffer<Rgb<u8>, Vec<u8>>) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
+    let mut gamma_corrected_image = ImageBuffer::new(image.width(), image.height());
+    let apply_gamma = |value: u8| -> u8 { (value as f32).powf(1.0 / 2.2) as u8 };
+    for x in 0..image.width() {
+        for y in 0..image.height() {
+            let pixel = image.get_pixel(x, y).0;
+            let red = apply_gamma(pixel[0]);
+            let green = apply_gamma(pixel[1]);
+            let blue = apply_gamma(pixel[2]);
+            gamma_corrected_image.put_pixel(x, y, Rgb([red, green, blue]));
+        }
+    }
+    gamma_corrected_image
 }
 
 fn white_balance(image: &ImageBuffer<Rgb<u8>, Vec<u8>>) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
@@ -75,6 +94,11 @@ fn demosaick_image(image: rawloader::RawImage) -> ImageBuffer<Rgb<u8>, Vec<u8>> 
     // Segue a seguinte ordem:
     // [R G
     //  G B]
+
+    //TODO: Fazer um metodo que busca a media na horizontal+vertical
+    // Um que faça na diagonal
+    // Fazer metodo que pegue somente horizontal
+    // Um que faça somente na vertical
 
     println!("Iniciando Demosaicking.");
     if let rawloader::RawImageData::Integer(data) = image.data {
