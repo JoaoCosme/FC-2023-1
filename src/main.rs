@@ -7,38 +7,53 @@ fn main() {
     let demosaic = demosaick_image(image);
     let white_balance = white_balance(&demosaic);
     println!("Processamento completo! Iniciando salvamento...");
-    demosaic.save("image.png").expect("Failed to save image");
+    demosaic
+        .save("demosaick.png")
+        .expect("Failed to save image");
+    white_balance
+        .save("white_balance.png")
+        .expect("Failed to save image");
     println!("Salvamento completo com sucesso!");
 }
 
 fn white_balance(image: &ImageBuffer<Rgb<u8>, Vec<u8>>) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
     // Computar a media de R G e B ao longo da imagem
-    let mut red_avg: i32 = 0;
-    let mut green_avg: i32 = 0;
-    let mut blue_avg: i32 = 0;
+    let mut red_avg: f32 = 0f32;
+    let mut green_avg: f32 = 0f32;
+    let mut blue_avg: f32 = 0f32;
     for x in 0..image.width() {
         for y in 0..image.height() {
-            red_avg += image.get_pixel(x, y).0[0] as i32;
-            green_avg += image.get_pixel(x, y).0[1] as i32;
-            blue_avg += image.get_pixel(x, y).0[2] as i32;
+            red_avg += image.get_pixel(x, y).0[0] as f32;
+            green_avg += image.get_pixel(x, y).0[1] as f32;
+            blue_avg += image.get_pixel(x, y).0[2] as f32;
         }
     }
-    red_avg = red_avg / (image.width() * image.height()) as i32;
-    green_avg = green_avg / (image.width() * image.height()) as i32;
-    blue_avg = blue_avg / (image.width() * image.height()) as i32;
+    red_avg = red_avg / (image.width() * image.height()) as f32;
+    green_avg = green_avg / (image.width() * image.height()) as f32;
+    blue_avg = blue_avg / (image.width() * image.height()) as f32;
 
     let alfa = green_avg / red_avg;
     let beta = green_avg / blue_avg;
+
+    dbg!(alfa, beta);
 
     let mut white_balanced_image = ImageBuffer::new(image.width(), image.height());
 
     for x in 0..image.width() {
         for y in 0..image.height() {
-            let red = image.get_pixel(x, y).0[0] as i32 * alfa;
+            let red = image.get_pixel(x, y).0[0] as f32 * alfa;
             let green = image.get_pixel(x, y).0[1];
-            let blue = image.get_pixel(x, y).0[2] as i32 * beta;
+            let blue = image.get_pixel(x, y).0[2] as f32 * beta;
 
-            white_balanced_image.put_pixel(x, y, Rgb([red as u8, green, blue as u8]));
+            white_balanced_image.put_pixel(
+                x,
+                y,
+                Rgb([
+                    normalize_pixel_val(red as u16),
+                    normalize_pixel_val(green as u16),
+                    normalize_pixel_val(blue as u16),
+                ]),
+            );
         }
     }
 
