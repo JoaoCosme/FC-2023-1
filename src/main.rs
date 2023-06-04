@@ -112,10 +112,18 @@ fn demosaick_image(image: rawloader::RawImage) -> ImageBuffer<Rgb<u8>, Vec<u8>> 
                 / 4
         };
         let get_avg_horizontal = |x: u32, y: u32| -> u16 {
-            (get_pixel_value(x + 1, y) + get_pixel_value(x.saturating_sub(1), y)) / 2
+            (get_pixel_value(x + 1, y)
+                + get_pixel_value(x + 2, y)
+                + get_pixel_value(x.saturating_sub(1), y)
+                + get_pixel_value(x.saturating_sub(2), y))
+                / 4
         };
         let get_avg_vertical = |x: u32, y: u32| -> u16 {
-            (get_pixel_value(x, y + 1) + get_pixel_value(x, y.saturating_sub(1))) / 2
+            (get_pixel_value(x, y + 1)
+                + get_pixel_value(x, y + 2)
+                + get_pixel_value(x, y.saturating_sub(1))
+                + get_pixel_value(x, y.saturating_sub(2)))
+                / 4
         };
         let get_avg_diagonally = |x: u32, y: u32| -> u16 {
             (get_pixel_value(x + 1, y + 1)
