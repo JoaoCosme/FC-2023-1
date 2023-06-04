@@ -32,7 +32,7 @@ fn save_image(image: &ImageBuffer<Rgb<f32>, Vec<f32>>, file_name: &str) {
 fn gamma_correct_image(image: &ImageBuffer<Rgb<f32>, Vec<f32>>) -> ImageBuffer<Rgb<f32>, Vec<f32>> {
     println!("Incializando Gamma Encoding");
     let mut gamma_corrected_image = ImageBuffer::new(image.width(), image.height());
-    let apply_gamma = |value: f32| -> f32 { (value as f32).powf(1.0 / 2.2) };
+    let apply_gamma = |value: f32| -> f32 { (value).powf(1.0 / 2.2) };
     for (x, y, pixel) in image.enumerate_pixels() {
         let red = apply_gamma(pixel[0]);
         let green = apply_gamma(pixel[1]);
@@ -46,9 +46,9 @@ fn white_balance_scaling(
     image: &ImageBuffer<Rgb<f32>, Vec<f32>>,
 ) -> ImageBuffer<Rgb<f32>, Vec<f32>> {
     println!("Incializando whitebalancing:Scaling RGB");
-    let red_adjust = 255f32 / 170f32;
+    let red_adjust = 255f32 / 139f32;
     let green_adjust = 255f32 / 231f32;
-    let blue_adjust = 255f32 / 141f32;
+    let blue_adjust = 255f32 / 134f32;
 
     let mut white_balanced_image = ImageBuffer::new(image.width(), image.height());
 
