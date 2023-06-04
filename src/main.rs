@@ -21,11 +21,11 @@ fn save_image(image: &ImageBuffer<Rgb<f32>, Vec<f32>>, file_name: &str) {
     let mut output_image: ImageBuffer<image::Rgb<u8>, Vec<u8>> = ImageBuffer::new(width, height);
 
     for (x, y, pixel) in image.enumerate_pixels() {
-        let r = (pixel[0] * 255.0).round() as u8;
-        let g = (pixel[1] * 255.0).round() as u8;
-        let b = (pixel[2] * 255.0).round() as u8;
+        let red = (pixel[0] * 255.0).round() as u8;
+        let green = (pixel[1] * 255.0).round() as u8;
+        let blue = (pixel[2] * 255.0).round() as u8;
 
-        output_image.put_pixel(x, y, image::Rgb([r, g, b]));
+        output_image.put_pixel(x, y, Rgb([red, green, blue]));
     }
 
     output_image.save(file_name).expect("Should save image");
@@ -58,10 +58,6 @@ fn white_balance_scaling(
 
         white_balanced_image.put_pixel(x, y, Rgb([red, green, blue]));
     }
-
-    // Computar os ganhos alfa e beta a partir disso
-    // Multiplicar R pelo ganho alfa
-    // Multiplicar B pelo ganho beta
     white_balanced_image
 }
 
@@ -70,7 +66,7 @@ fn white_balance(image: &ImageBuffer<Rgb<f32>, Vec<f32>>) -> ImageBuffer<Rgb<f32
     let mut red_avg: f32 = 0f32;
     let mut green_avg: f32 = 0f32;
     let mut blue_avg: f32 = 0f32;
-    for (x, y, pixel) in image.enumerate_pixels() {
+    for (_x, _y, pixel) in image.enumerate_pixels() {
         red_avg += pixel[0] as f32;
         green_avg += pixel[1] as f32;
         blue_avg += pixel[2] as f32;
@@ -212,7 +208,7 @@ fn make_get_pixel(data: &Vec<u16>, width: u32, height: u32) -> impl Fn(u32, u32)
 }
 
 fn normalize_pixel_val(pixel: u16) -> f32 {
-    (pixel as f32 / MAX_12_BIT_VALUE)
+    pixel as f32 / MAX_12_BIT_VALUE
 }
 fn read_image() -> rawloader::RawImage {
     let file = "./src/images/scene-raw.dng";
