@@ -7,7 +7,7 @@ fn main() {
     let white_balance_gray_world = white_balance(&demosaic);
     let white_balance = white_balance_scaling(&demosaic);
     let gamma_encoded = gamma_correct_image(&white_balance);
-    println!("Processamento completo! Iniciando salvamento...");
+    println!("Processamento completo! Iniciando salvamento de imagens...");
     save_image(&demosaic, "demosaick.png");
     save_image(&white_balance, "white_balance.png");
     save_image(&white_balance_gray_world, "white_balance_gray_world.png");
@@ -30,6 +30,7 @@ fn save_image(image: &ImageBuffer<Rgb<f32>, Vec<f32>>, file_name: &str) {
     output_image.save(file_name).expect("Should save image");
 }
 fn gamma_correct_image(image: &ImageBuffer<Rgb<f32>, Vec<f32>>) -> ImageBuffer<Rgb<f32>, Vec<f32>> {
+    println!("Incializando Gamma Encoding");
     let mut gamma_corrected_image = ImageBuffer::new(image.width(), image.height());
     let apply_gamma = |value: f32| -> f32 { (value as f32).powf(1.0 / 2.2) };
     for (x, y, pixel) in image.enumerate_pixels() {
@@ -44,6 +45,7 @@ fn gamma_correct_image(image: &ImageBuffer<Rgb<f32>, Vec<f32>>) -> ImageBuffer<R
 fn white_balance_scaling(
     image: &ImageBuffer<Rgb<f32>, Vec<f32>>,
 ) -> ImageBuffer<Rgb<f32>, Vec<f32>> {
+    println!("Incializando whitebalancing:Scaling RGB");
     let red_adjust = 255f32 / 170f32;
     let green_adjust = 255f32 / 231f32;
     let blue_adjust = 255f32 / 141f32;
@@ -61,6 +63,7 @@ fn white_balance_scaling(
 }
 
 fn white_balance(image: &ImageBuffer<Rgb<f32>, Vec<f32>>) -> ImageBuffer<Rgb<f32>, Vec<f32>> {
+    println!("Incializando whitebalancing:Gray World");
     // Computar a media de R G e B ao longo da imagem
     let mut red_avg: f32 = 0f32;
     let mut green_avg: f32 = 0f32;
@@ -76,8 +79,6 @@ fn white_balance(image: &ImageBuffer<Rgb<f32>, Vec<f32>>) -> ImageBuffer<Rgb<f32
 
     let alfa = green_avg / red_avg;
     let beta = green_avg / blue_avg;
-
-    dbg!(alfa, beta);
 
     let mut white_balanced_image = ImageBuffer::new(image.width(), image.height());
 
@@ -102,16 +103,6 @@ fn demosaick_image(image: rawloader::RawImage) -> ImageBuffer<Rgb<f32>, Vec<f32>
         "Largura: {} Altura: {} Profundidade:{} Modelo:{}",
         image.width, image.height, image.cpp, image.model
     );
-
-    // A imagem RAW aqui usa valores 12-bit unassigned.
-    // Segue a seguinte ordem:
-    // [R G
-    //  G B]
-
-    //TODO: Fazer um metodo que busca a media na horizontal+vertical
-    // Um que faça na diagonal
-    // Fazer metodo que pegue somente horizontal
-    // Um que faça somente na vertical
 
     println!("Iniciando Demosaicking.");
 
