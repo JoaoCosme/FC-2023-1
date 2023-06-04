@@ -69,13 +69,14 @@ fn white_balance(image: &ImageBuffer<Rgb<f32>, Vec<f32>>) -> ImageBuffer<Rgb<f32
     let mut green_avg: f32 = 0f32;
     let mut blue_avg: f32 = 0f32;
     for (_x, _y, pixel) in image.enumerate_pixels() {
-        red_avg += pixel[0] as f32;
-        green_avg += pixel[1] as f32;
-        blue_avg += pixel[2] as f32;
+        red_avg += pixel[0];
+        green_avg += pixel[1];
+        blue_avg += pixel[2];
     }
-    red_avg = red_avg / (image.width() * image.height()) as f32;
-    green_avg = green_avg / (image.width() * image.height()) as f32;
-    blue_avg = blue_avg / (image.width() * image.height()) as f32;
+    let image_size = (image.width() * image.height()) as f32;
+    red_avg = red_avg / image_size;
+    green_avg = green_avg / image_size;
+    blue_avg = blue_avg / image_size;
 
     let alfa = green_avg / red_avg;
     let beta = green_avg / blue_avg;
