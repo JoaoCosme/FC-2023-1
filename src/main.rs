@@ -111,6 +111,13 @@ fn demosaick_image(image: rawloader::RawImage) -> ImageBuffer<Rgb<u8>, Vec<u8>> 
                 + get_pixel_value(x, y.saturating_sub(1)))
                 / 4
         };
+        let get_avg_diagonally = |x: u32, y: u32| -> u16 {
+            (get_pixel_value(x + 1, y + 1)
+                + get_pixel_value(x.saturating_sub(1), y + 1)
+                + get_pixel_value(x + 1, y.saturating_sub(1))
+                + get_pixel_value(x.saturating_sub(1), y.saturating_sub(1)))
+                / 4
+        };
         for x in 0..image.width as u32 {
             for y in 0..image.height as u32 {
                 //Para cada pixel verificar se é r g ou b
@@ -124,28 +131,28 @@ fn demosaick_image(image: rawloader::RawImage) -> ImageBuffer<Rgb<u8>, Vec<u8>> 
                 let red;
                 let green;
                 let blue;
-                if x % 2 == 0 || x == 0 {
-                    if y % 2 == 0 || y == 0 {
+                if x % 2 != 0 || x == 0 {
+                    if y % 2 != 0 || y == 0 {
                         //Caso vermelho
                         green = get_avg_horizontal_and_vertical(x, y);
-                        blue = get_pixel_value(x + 1, y + 1);
+                        blue = get_avg_diagonally(x, y);
                         red = pixel;
                     } else {
                         //Caso verde
                         red = get_avg_horizontal_and_vertical(x, y);
-                        blue = get_pixel_value(x + 1, y + 1);
+                        blue = get_avg_diagonally(x, y);
                         green = pixel;
                     }
                 } else {
                     if y % 2 == 0 || y == 0 {
                         //Caso azul
                         green = get_avg_horizontal_and_vertical(x, y);
-                        red = get_pixel_value(x + 1, y + 1);
+                        red = get_avg_diagonally(x, y);
                         blue = pixel;
                     } else {
                         //Caso verde
                         blue = get_avg_horizontal_and_vertical(x, y);
-                        red = get_pixel_value(x + 1, y + 1);
+                        red = get_avg_diagonally(x, y);
                         green = pixel;
                     }
                 }
