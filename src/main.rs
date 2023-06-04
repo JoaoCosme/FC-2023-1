@@ -3,8 +3,7 @@ const MAX_12_BIT_VALUE: f32 = 4095f32;
 
 fn main() {
     println!("Iniciando leitura de arquivos.");
-    let image = read_image();
-    let demosaic = demosaick_image(image);
+    let demosaic = demosaick_image(read_raw_image());
     let white_balance_gray_world = white_balance(&demosaic);
     let white_balance = white_balance_scaling(&demosaic);
     let gamma_encoded = gamma_correct_image(&white_balance);
@@ -210,7 +209,7 @@ fn make_get_pixel(data: &Vec<u16>, width: u32, height: u32) -> impl Fn(u32, u32)
 fn normalize_pixel_val(pixel: u16) -> f32 {
     pixel as f32 / MAX_12_BIT_VALUE
 }
-fn read_image() -> rawloader::RawImage {
+fn read_raw_image() -> rawloader::RawImage {
     let file = "./src/images/scene-raw.dng";
     let image = rawloader::decode_file(file).unwrap();
     image
