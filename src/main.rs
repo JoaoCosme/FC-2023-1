@@ -111,6 +111,12 @@ fn demosaick_image(image: rawloader::RawImage) -> ImageBuffer<Rgb<u8>, Vec<u8>> 
                 + get_pixel_value(x, y.saturating_sub(1)))
                 / 4
         };
+        let get_avg_horizontal = |x: u32, y: u32| -> u16 {
+            (get_pixel_value(x + 1, y) + get_pixel_value(x.saturating_sub(1), y)) / 2
+        };
+        let get_avg_vertical = |x: u32, y: u32| -> u16 {
+            (get_pixel_value(x, y + 1) + get_pixel_value(x, y.saturating_sub(1))) / 2
+        };
         let get_avg_diagonally = |x: u32, y: u32| -> u16 {
             (get_pixel_value(x + 1, y + 1)
                 + get_pixel_value(x.saturating_sub(1), y + 1)
@@ -139,8 +145,8 @@ fn demosaick_image(image: rawloader::RawImage) -> ImageBuffer<Rgb<u8>, Vec<u8>> 
                         red = pixel;
                     } else {
                         //Caso verde
-                        red = get_avg_horizontal_and_vertical(x, y);
-                        blue = get_avg_diagonally(x, y);
+                        red = get_avg_horizontal(x, y);
+                        blue = get_avg_vertical(x, y);
                         green = pixel;
                     }
                 } else {
@@ -151,8 +157,8 @@ fn demosaick_image(image: rawloader::RawImage) -> ImageBuffer<Rgb<u8>, Vec<u8>> 
                         blue = pixel;
                     } else {
                         //Caso verde
-                        blue = get_avg_horizontal_and_vertical(x, y);
-                        red = get_avg_diagonally(x, y);
+                        blue = get_avg_horizontal(x, y);
+                        red = get_avg_vertical(x, y);
                         green = pixel;
                     }
                 }
